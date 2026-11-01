@@ -1,7 +1,9 @@
-fastapi==0.115.0
-uvicorn[standard]==0.30.6
-jinja2==3.1.4
-python-multipart==0.0.9
-pydantic==2.9.2
-pytest==8.3.3
-httpx==0.27.2
+# Rangos compatibles en lugar de pins exactos: el deploy puede correr en
+# Python 3.11, 3.12, 3.13 o 3.14. pydantic>=2.12 trae wheels precompilados
+# para 3.13/3.14 (evita compilar pydantic-core con Rust).
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30
+jinja2>=3.1
+pydantic>=2.12,<3
+pytest>=8.3
+httpx>=0.27
