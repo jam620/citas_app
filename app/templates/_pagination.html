@@ -1,0 +1,41 @@
+{% macro pager(meta, base_url, filtros) %}
+<div class="pager">
+    <span class="pager-info">
+        {{ "{:,}".format(meta.total) }} resultado(s) · página {{ meta.page }} de {{ meta.pages if meta.pages > 0 else 1 }}
+    </span>
+    <span class="pager-links">
+        {% if meta.has_prev %}
+            <a class="step" href="{{ build_url(base_url, filtros, page=meta.page - 1) }}">«</a>
+        {% else %}<span class="disabled">«</span>{% endif %}
+
+        {% for n in page_window(meta.page, meta.pages) %}
+            {% if n is string %}
+                <span class="ellipsis">{{ n }}</span>
+            {% elif n == meta.page %}
+                <span class="current">{{ n }}</span>
+            {% else %}
+                <a href="{{ build_url(base_url, filtros, page=n) }}">{{ n }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if meta.has_next %}
+            <a class="step" href="{{ build_url(base_url, filtros, page=meta.page + 1) }}">»</a>
+        {% else %}<span class="disabled">»</span>{% endif %}
+    </span>
+</div>
+{% endmacro %}
+
+{% macro sortable_th(label, column, base_url, filtros) %}
+{# Encabezado ordenable: cicla asc -> desc -> asc. Muestra flecha si activo. #}
+{% set active = filtros.sort == column %}
+{% set next_dir = 'desc' if (active and filtros.direction != 'desc') else 'asc' %}
+<th>
+    <a class="sort{{ ' active' if active }}" href="{{ build_url(base_url, filtros, sort=column, direction=next_dir, page=None) }}">
+        {{ label }}{% if active %}{% if filtros.direction == 'desc' %} ▼{% else %} ▲{% endif %}{% endif %}
+    </a>
+</th>
+{% endmacro %}
+
+{% macro export_btn(base_url, filtros, label) %}
+<a class="btn ghost" href="{{ build_url(base_url ~ '/export', filtros, page=None, page_size=None) }}">⬇ {{ label }}</a>
+{% endmacro %}

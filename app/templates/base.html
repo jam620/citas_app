@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Consulta de Citas{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+    <div class="brand">🏥 Consulta de Citas</div>
+    <nav>
+        <a href="/">Inicio</a>
+        <a href="/pacientes">Pacientes</a>
+        <a href="/medicos">Médicos (cupos)</a>
+        <a href="/totales">Totales por día</a>
+    </nav>
+</header>
+
+<main class="container">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+    <span>MVP de solo lectura · datos importados desde CSV</span>
+</footer>
+</body>
+</html>

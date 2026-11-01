@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% from "_pagination.html" import pager, sortable_th, export_btn %}
+{% block title %}Médicos · Consulta de Citas{% endblock %}
+{% block content %}
+<h1>Cupos por médico y día</h1>
+
+<form class="filters" method="get" action="/medicos">
+    <div class="field">
+        <label>Médico</label>
+        <input type="text" name="medico" value="{{ filtros.medico }}" placeholder="Apellido…">
+    </div>
+    <div class="field">
+        <label>Sucursal</label>
+        <select name="cod_ue_mu">
+            <option value="">Todas</option>
+            {% for s in sucursales %}
+            <option value="{{ s.cod_ue_mu }}" {% if filtros.cod_ue_mu and s.cod_ue_mu == filtros.cod_ue_mu %}selected{% endif %}>{{ s.sucursal }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="field">
+        <label>Desde</label>
+        <input type="date" name="fecha_desde" value="{{ filtros.fecha_desde }}">
+    </div>
+    <div class="field">
+        <label>Hasta</label>
+        <input type="date" name="fecha_hasta" value="{{ filtros.fecha_hasta }}">
+    </div>
+    <div class="field">
+        <label>Por página</label>
+        <select name="page_size">
+            {% for p in page_sizes %}
+            <option value="{{ p }}" {% if filtros.page_size and p == filtros.page_size %}selected{% endif %}>{{ p }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="field actions">
+        <button type="submit" class="btn">Buscar</button>
+        <a class="btn ghost" href="/medicos">Limpiar</a>
+        {{ export_btn('/medicos', filtros, 'Exportar CSV') }}
+    </div>
+</form>
+
+{{ pager(result.meta, '/medicos', filtros) }}
+
+<div class="table-wrap">
+<table>
+    <thead>
+        <tr>
+            {{ sortable_th('Fecha', 'fecha', '/medicos', filtros) }}
+            {{ sortable_th('Médico', 'medico', '/medicos', filtros) }}
+            {{ sortable_th('Cupos', 'total_cupos', '/medicos', filtros) }}
+            {{ sortable_th('Sucursal', 'sucursal', '/medicos', filtros) }}
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in result.data %}
+        <tr>
+            <td>{{ r.fecha }}</td>
+            <td>{{ r.medico }}</td>
+            <td class="num">{{ r.total_cupos }}</td>
+            <td class="muted">{{ r.sucursal }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="empty">Sin resultados para estos filtros.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+{{ pager(result.meta, '/medicos', filtros) }}
+{% endblock %}

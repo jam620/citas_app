@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Inicio · Consulta de Citas{% endblock %}
+{% block content %}
+<h1>Panel de consulta</h1>
+<p class="muted">Resumen de los datos cargados desde los archivos CSV.</p>
+
+<div class="cards">
+    <div class="card">
+        <div class="card-num">{{ "{:,}".format(resumen.filas_pacientes) }}</div>
+        <div class="card-label">Citas de pacientes</div>
+    </div>
+    <div class="card">
+        <div class="card-num">{{ "{:,}".format(resumen.pacientes_unicos) }}</div>
+        <div class="card-label">Pacientes únicos (por cédula)</div>
+    </div>
+    <div class="card">
+        <div class="card-num">{{ "{:,}".format(resumen.filas_medicos) }}</div>
+        <div class="card-label">Registros de cupos por médico</div>
+    </div>
+    <div class="card">
+        <div class="card-num">{{ "{:,}".format(resumen.suma_total_citas) }}</div>
+        <div class="card-label">Suma de citas (totales/día)</div>
+    </div>
+    <div class="card">
+        <div class="card-num">{{ sucursales | length }}</div>
+        <div class="card-label">Sucursales</div>
+    </div>
+</div>
+
+{% if resumen.fecha_min %}
+<p class="muted">Rango de fechas de pacientes: <strong>{{ resumen.fecha_min }}</strong> → <strong>{{ resumen.fecha_max }}</strong></p>
+{% endif %}
+
+<div class="quick-links">
+    <a class="btn" href="/pacientes">Consultar pacientes</a>
+    <a class="btn" href="/medicos">Consultar cupos por médico</a>
+    <a class="btn" href="/totales">Consultar totales por día</a>
+</div>
+
+{% macro barras(titulo, items, attr_label) %}
+{% if items %}
+<section class="panel">
+    <h2>{{ titulo }}</h2>
+    {% set mx = items | map(attribute='total') | max %}
+    <div class="bars">
+        {% for it in items %}
+        <div class="bar-row">
+            <span class="bar-label">{{ it[attr_label] }}</span>
+            <div class="bar-track"><div class="bar-fill w{{ ((it.total / mx * 20) | round | int) }}"></div></div>
+            <span class="bar-value">{{ "{:,}".format(it.total) }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endmacro %}
+
+<div class="grid-2">
+    {{ barras('Top especialidades (citas de pacientes)', top_especialidades, 'especialidad') }}
+    {{ barras('Sucursales con más citas', citas_por_sucursal, 'sucursal') }}
+</div>
+
+{% if totales_por_mes %}
+<section class="panel">
+    <h2>Citas totales por mes</h2>
+    {% set mx = totales_por_mes | map(attribute='total') | max %}
+    <div class="bars">
+        {% for m in totales_por_mes %}
+        <div class="bar-row">
+            <span class="bar-label mono">{{ m.mes }}</span>
+            <div class="bar-track"><div class="bar-fill alt w{{ ((m.total / mx * 20) | round | int) }}"></div></div>
+            <span class="bar-value">{{ "{:,}".format(m.total) }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

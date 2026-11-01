@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# DATOS: los CSV reales contienen datos personales sensibles y NUNCA se suben.
+*.csv
+data/*.csv
+data/*.db
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Config local
+.env
+
+# Docs internos de diseño (se quedan solo en local, fuera del repo)
+/0[0-8]_*.md
+/MEMORIA.md
+
+# Tooling
+.pytest_cache/
+.coverage
+htmlcov/
+.DS_Store
