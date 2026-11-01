@@ -10,7 +10,7 @@ Las rutas NO hablan con el Repository directamente: siempre pasan por aquí.
 """
 from __future__ import annotations
 
-from typing import Any, Iterator
+from typing import Any
 
 from .config import settings
 from .repository import Repository, repository as default_repo
@@ -73,36 +73,6 @@ class QueryService:
         filtros["direction"] = self._direction(direction)
         rows, total = self.repo.totales(limit=limit, offset=offset, **filtros)
         return self._package(rows, total, page, page_size)
-
-    # ---- exports CSV (iteradores acotados) --------------------------------
-    def _export(self, iter_rows: Iterator[dict], headers: list[str],
-                columns: list[str]) -> Iterator[dict]:
-        """Envuelve un iterador del repo y aplica el tope de exportación.
-        Devuelve dicts con solo las columnas del CSV de salida."""
-        count = 0
-        for row in iter_rows:
-            if count >= settings.max_export_rows:
-                return
-            count += 1
-            yield {h: row.get(c, "") for h, c in zip(headers, columns)}
-
-    def export_pacientes(self, **filtros: Any) -> Iterator[dict[str, Any]]:
-        headers = ["sucursal", "fecha", "hora", "medico", "especialidad", "paciente", "cedula"]
-        filtros.pop("limit", None)
-        filtros.pop("offset", None)
-        return self._export(self.repo.iter_pacientes(**filtros), headers, headers)
-
-    def export_medicos(self, **filtros: Any) -> Iterator[dict[str, Any]]:
-        headers = ["sucursal", "fecha", "medico", "total_cupos"]
-        filtros.pop("limit", None)
-        filtros.pop("offset", None)
-        return self._export(self.repo.iter_medicos(**filtros), headers, headers)
-
-    def export_totales(self, **filtros: Any) -> Iterator[dict[str, Any]]:
-        headers = ["sucursal", "fecha", "total_citas"]
-        filtros.pop("limit", None)
-        filtros.pop("offset", None)
-        return self._export(self.repo.iter_totales(**filtros), headers, headers)
 
     # ---- apoyo para la UI -------------------------------------------------
     def opciones_filtro(self) -> dict[str, Any]:

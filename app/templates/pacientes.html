@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_pagination.html" import pager, sortable_th, export_btn %}
+{% from "_pagination.html" import pager, sortable_th %}
 {% block title %}Pacientes · Consulta de Citas{% endblock %}
 {% block content %}
 <h1>Citas de pacientes</h1>
@@ -54,7 +54,6 @@
     <div class="field actions">
         <button type="submit" class="btn">Buscar</button>
         <a class="btn ghost" href="/pacientes">Limpiar</a>
-        {{ export_btn('/pacientes', filtros, 'Exportar CSV') }}
     </div>
 </form>
 

@@ -1,3 +1,2 @@
-"""Paquete principal de la app de consulta de citas."""
-
-__version__ = "0.1.0"
+"""Consulta de Citas — MVP de solo lectura."""
+VERSION = "0.2.1"

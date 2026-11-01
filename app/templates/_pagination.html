@@ -35,7 +35,3 @@
     </a>
 </th>
 {% endmacro %}
-
-{% macro export_btn(base_url, filtros, label) %}
-<a class="btn ghost" href="{{ build_url(base_url ~ '/export', filtros, page=None, page_size=None) }}">⬇ {{ label }}</a>
-{% endmacro %}

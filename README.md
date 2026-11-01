@@ -37,9 +37,9 @@ pytest -q
 | Vista | Contenido | Extras |
 |---|---|---|
 | `/` (Inicio) | Dashboard: totales, pacientes únicos, top especialidades, citas por sucursal y por mes | gráficos de barras sin JS |
-| `/pacientes` | Citas por nombre, cédula, médico, especialidad, sucursal y rango de fechas | orden por columna, export CSV |
-| `/medicos` | Cupos por médico y día | orden por columna, export CSV |
-| `/totales` | Citas totales por día (resumen pre-agregado) | orden por columna, export CSV |
+| `/pacientes` | Citas por nombre, cédula, médico, especialidad, sucursal y rango de fechas | orden por columna |
+| `/medicos` | Cupos por médico y día | orden por columna |
+| `/totales` | Citas totales por día (resumen pre-agregado) | orden por columna |
 
 ## API JSON
 
@@ -47,9 +47,6 @@ pytest -q
 - `GET /api/resumen` — métricas generales.
 - `GET /api/pacientes | /api/medicos | /api/totales` — consulta paginada con
   filtros, `sort`, `direction` (`asc`/`desc`), `page` y `page_size`.
-- `GET /pacientes/export | /medicos/export | /totales/export` — los mismos
-  filtros de la vista, respuesta CSV en streaming con tope de filas
-  (`CITAS_MAX_EXPORT_ROWS`, default 100 000).
 
 ## Documentación
 

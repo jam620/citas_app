@@ -60,17 +60,6 @@ class Repository:
             rows = self._rows_to_dicts(cur.fetchall())
         return rows, total
 
-    def _streaming_query(self, base_sql: str, params: list[Any],
-                         batch: int = 2000) -> Iterator[dict[str, Any]]:
-        """Itera el resultado sin cargarlo entero en memoria (para exports)."""
-        with self.db.cursor(readonly=True) as cur:
-            cur.execute(base_sql, params)
-            while True:
-                rows = cur.fetchmany(batch)
-                if not rows:
-                    return
-                yield from (dict(r) for r in rows)
-
     @staticmethod
     def _paged_sql(select_cols: str, table: str, where: str, order: str) -> tuple[str, str]:
         join = f"JOIN sucursales s ON s.cod_ue_mu = t.cod_ue_mu"
@@ -121,19 +110,6 @@ class Repository:
         )
         return self._paged_query(base, count, params, limit, offset)
 
-    def iter_medicos(self, **filtros: Any) -> Iterator[dict[str, Any]]:
-        """Itera TODAS las filas que cumplen el filtro (sin paginar). Para el
-        export CSV. Usa la misma lista blanca de orden que la consulta paginada."""
-        where, params = self._build_where(**filtros)
-        order = self._safe_order("citas_medicos", filtros.get("sort"), "fecha",
-                                 filtros.get("direction"))
-        sql = (
-            "SELECT t.id, t.cod_ue_mu, s.sucursal, t.fecha, t.medico, t.total_cupos "
-            "FROM citas_medicos t JOIN sucursales s ON s.cod_ue_mu = t.cod_ue_mu "
-            f"{where} ORDER BY {order}, t.medico"
-        )
-        yield from self._streaming_query(sql, params)
-
     # ---- citas_pacientes --------------------------------------------------
     def pacientes(
         self,
@@ -167,18 +143,6 @@ class Repository:
         )
         return self._paged_query(base, count, params, limit, offset)
 
-    def iter_pacientes(self, **filtros: Any) -> Iterator[dict[str, Any]]:
-        where, params = self._build_where(**filtros)
-        order = self._safe_order("citas_pacientes", filtros.get("sort"), "fecha",
-                                 filtros.get("direction"))
-        sql = (
-            "SELECT t.id, t.cod_ue_mu, s.sucursal, t.fecha, t.hora, t.medico, "
-            "t.especialidad, t.paciente, t.cedula "
-            "FROM citas_pacientes t JOIN sucursales s ON s.cod_ue_mu = t.cod_ue_mu "
-            f"{where} ORDER BY {order}, t.hora"
-        )
-        yield from self._streaming_query(sql, params)
-
     # ---- citas_totales_dia ------------------------------------------------
     def totales(
         self,
@@ -202,17 +166,6 @@ class Repository:
             "citas_totales_dia", where, order,
         )
         return self._paged_query(base, count, params, limit, offset)
-
-    def iter_totales(self, **filtros: Any) -> Iterator[dict[str, Any]]:
-        where, params = self._build_where(**filtros)
-        order = self._safe_order("citas_totales_dia", filtros.get("sort"), "fecha",
-                                 filtros.get("direction"))
-        sql = (
-            "SELECT t.id, t.cod_ue_mu, s.sucursal, t.fecha, t.total_citas "
-            "FROM citas_totales_dia t JOIN sucursales s ON s.cod_ue_mu = t.cod_ue_mu "
-            f"{where} ORDER BY {order}"
-        )
-        yield from self._streaming_query(sql, params)
 
     # ---- métricas para el dashboard --------------------------------------
     def resumen(self) -> dict[str, Any]:

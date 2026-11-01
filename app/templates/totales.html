@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_pagination.html" import pager, sortable_th, export_btn %}
+{% from "_pagination.html" import pager, sortable_th %}
 {% block title %}Totales por día · Consulta de Citas{% endblock %}
 {% block content %}
 <h1>Totales de citas por día</h1>
@@ -33,7 +33,6 @@
     <div class="field actions">
         <button type="submit" class="btn">Buscar</button>
         <a class="btn ghost" href="/totales">Limpiar</a>
-        {{ export_btn('/totales', filtros, 'Exportar CSV') }}
     </div>
 </form>
 

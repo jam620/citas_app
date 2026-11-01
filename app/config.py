@@ -44,7 +44,6 @@ class Settings:
     db_path: Path
     max_page_size: int
     default_page_size: int
-    max_export_rows: int
     debug: bool
 
     # Nombres de archivo esperados de los 3 CSV de origen.
@@ -60,15 +59,12 @@ def _build_settings() -> Settings:
         db_path = (BASE_DIR / db_path).resolve()
 
     max_page = max(1, int(_env("CITAS_MAX_PAGE_SIZE", "200")))
-    max_export = max(1, int(_env("CITAS_MAX_EXPORT_ROWS", "100000")))
-
     return Settings(
         base_dir=BASE_DIR,
         data_dir=data_dir,
         db_path=db_path,
         max_page_size=max_page,
         default_page_size=min(50, max_page),
-        max_export_rows=max_export,
         debug=_env("CITAS_DEBUG", "false").lower() in {"1", "true", "yes"},
     )
 

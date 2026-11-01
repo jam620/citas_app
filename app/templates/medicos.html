@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_pagination.html" import pager, sortable_th, export_btn %}
+{% from "_pagination.html" import pager, sortable_th %}
 {% block title %}Médicos · Consulta de Citas{% endblock %}
 {% block content %}
 <h1>Cupos por médico y día</h1>
@@ -37,7 +37,6 @@
     <div class="field actions">
         <button type="submit" class="btn">Buscar</button>
         <a class="btn ghost" href="/medicos">Limpiar</a>
-        {{ export_btn('/medicos', filtros, 'Exportar CSV') }}
     </div>
 </form>
 

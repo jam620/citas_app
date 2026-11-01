@@ -16,12 +16,10 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from . import VERSION
 from .config import settings
 from .database import db
 from .routes import router
-
-VERSION = "0.2.0"
-
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):

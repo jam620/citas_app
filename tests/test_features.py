@@ -1,7 +1,6 @@
 """Pruebas de las mejoras v0.2: orden en HTML, pager, export CSV, dashboard."""
 from __future__ import annotations
 
-import dataclasses
 from pathlib import Path
 
 import pytest
@@ -10,7 +9,6 @@ from fastapi.testclient import TestClient
 import app.repository as repository_mod
 import app.routes as routes_mod
 import app.service as service_mod
-from app.config import settings
 from app.database import DatabaseManager
 from app.etl import ETLImporter
 from app.repository import Repository
@@ -105,40 +103,6 @@ def test_pager_muestra_numeros(client):
     assert 'class="current"' in r.text  # página activa resaltada
 
 
-# ---- exports CSV --------------------------------------------------------------
-def test_export_pacientes_con_filtro(client):
-    r = client.get("/pacientes/export", params={"cedula": "8-2-2"})
-    assert r.status_code == 200
-    assert r.headers["content-type"].startswith("text/csv")
-    assert "attachment" in r.headers["content-disposition"]
-    body = r.text
-    assert body.splitlines()[0] == "sucursal,fecha,hora,medico,especialidad,paciente,cedula"
-    assert "ANA CRUZ" in body
-    assert "JUAN RIOS" not in body  # el filtro se respetó
-
-
-def test_export_respeta_tope_de_filas(client, monkeypatch):
-    nuevo = dataclasses.replace(settings, max_export_rows=2)
-    monkeypatch.setattr(service_mod, "settings", nuevo)
-    r = client.get("/pacientes/export")
-    lineas = [ln for ln in r.text.splitlines() if ln.strip()]
-    assert len(lineas) == 3  # cabecera + 2 filas (tope)
-
-
-def test_export_medicos_y_totales(client):
-    r1 = client.get("/medicos/export")
-    assert "DR. BRUNO DIAZ,7" in r1.text
-    r2 = client.get("/totales/export")
-    assert "437" in r2.text
-
-
-def test_export_sin_bd_no_explota(client):
-    # filtro sin resultados -> CSV solo con cabecera
-    r = client.get("/pacientes/export", params={"cedula": "NOEXISTE"})
-    assert r.status_code == 200
-    assert len(r.text.splitlines()) == 1
-
-
 # ---- dashboard ------------------------------------------------------------------
 def test_dashboard_html_agregados(client):
     r = client.get("/")
@@ -158,10 +122,44 @@ def test_health_incluye_conteos(client):
     r = client.get("/api/health")
     body = r.json()
     assert body["status"] == "ok"
-    assert body["version"] == "0.2.0"
+    assert body["version"] == "0.2.1"
     assert body["tablas"]["citas_pacientes"] == 3
 
 
 def test_csp_header_presente(client):
     r = client.get("/api/health")
     assert "default-src 'self'" in r.headers.get("Content-Security-Policy", "")
+
+
+# ---- regresión: formularios GET envían TODOS los campos, incluso vacíos ----
+FORM_VACIO = {
+    "paciente": "", "cedula": "8-2-2", "medico": "", "especialidad": "",
+    "cod_ue_mu": "", "fecha_desde": "", "fecha_hasta": "", "page_size": "50",
+}
+
+
+def test_formulario_con_campos_vacios_busca_por_cedula(client):
+    """Bug real: enviar el form completo con '' en cod_ue_mu/fechas daba 422."""
+    r = client.get("/pacientes", params=FORM_VACIO)
+    assert r.status_code == 200
+    assert "ANA CRUZ" in r.text
+
+
+def test_api_con_parametros_vacios(client):
+    r = client.get("/api/pacientes", params=FORM_VACIO)
+    assert r.status_code == 200
+    assert r.json()["meta"]["total"] == 1
+
+
+def test_medicos_y_totales_con_formulario_vacio(client):
+    assert client.get("/medicos", params={"medico": "", "cod_ue_mu": "",
+                                          "fecha_desde": "", "fecha_hasta": "",
+                                          "page_size": ""}).status_code == 200
+    assert client.get("/totales", params={"cod_ue_mu": "", "fecha_desde": "",
+                                          "fecha_hasta": "", "page_size": ""}).status_code == 200
+
+
+def test_fecha_mal_escrita_sigue_dando_422(client):
+    # La validación real NO se debilitó: fecha inválida no vacía sigue rechazada.
+    r = client.get("/pacientes", params={"fecha_desde": "01/10/2025"})
+    assert r.status_code == 422
